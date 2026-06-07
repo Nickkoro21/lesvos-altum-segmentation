@@ -377,8 +377,7 @@ if os.path.exists(QR):
     ov.add_patch(Rectangle((qx-0.003,qy-0.003),qw+0.006,qh+0.006,fill=False,edgecolor=NAVY,lw=1.4,zorder=11))
     a=fig.add_axes([qx,qy,qw,qh]); a.axis("off"); a.imshow(mpimg.imread(QR))
     cxq=qx+qw+0.008
-    fig.text(cxq,qy+qh*0.66,"Map Creation",fontsize=8.5,fontweight="bold",color=NAVY,ha="left",va="center")
-    fig.text(cxq,qy+qh*0.30,"σάρωσε → διαδραστική παρουσίαση",fontsize=6.6,color="#555",ha="left",va="center")
+    fig.text(cxq,qy+qh*0.5,"Map Creation",fontsize=9,fontweight="bold",color=NAVY,ha="left",va="center")
 RH=0.60; rh=RH/FIGH
 if os.path.exists(DLOGO):
     dw=RH/FIGW*(384/123); a=fig.add_axes([0.988-dw,0.975-rh,dw,rh]); a.axis("off"); a.imshow(mpimg.imread(DLOGO))

@@ -105,7 +105,7 @@ reference rather than a stand-alone executable.
 
 - 📊 [**7-Band vs RGB — Results Dashboard**](https://github.com/Nickkoro21/thesis-7band-vs-rgb) ([live](https://nickkoro21.github.io/thesis-7band-vs-rgb/))
 - 🧰 [**PostProcessing Toolbox**](https://github.com/Nickkoro21/PostProcessing-Toolbox)
-- 🎲 [**JM Separability Toolbox**](https://github.com/Nickkoro21/jm-separability-toolbox)
+- 🎲 [**JM Separability Toolbox**](https://github.com/Nickkoro21/jm-separability-toolbox) ([HF Space](https://huggingface.co/spaces/NickKoro21/jm-separability-toolbox))
 
 ## 📚 Citation
 
