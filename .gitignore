@@ -1,17 +1,17 @@
-# --- heavy data & binaries (kept local) ---
+# Heavy data & binaries (kept local)
 *.tif
 *.tiff
 *.npz
 *.aprx
 *.gdb/
-# --- iteration / experimental scripts & logs (kept local) ---
+# Iteration / experimental scripts & logs (kept local)
 compose_hero_param.py
 compose_hero_v1*.py
 compose_hero_v10_backup.py
 export_rgb_e.py
 runs_log.*
 compose_runs_log.txt
-# --- large render outputs (the lightweight web assets in docs/ ARE tracked) ---
+# Large local render masters (lightweight web copies live in docs/)
 /Hero_Layout*.png
 /Hero_Layout*.pdf
 /PREVIEW_*.png

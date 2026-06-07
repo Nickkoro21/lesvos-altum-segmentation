@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Σύνθετος Χάρτης Κάλυψης Γης — Πώς φτιάχτηκε</title>
+<title>Σύνθετος Χάρτης Κάλυψης Γης - Πώς φτιάχτηκε</title>
 <style>
   :root{
     --navy:#1F4E79; --navy2:#2C6CA8; --ink:#1d2329; --muted:#5b6670;
@@ -118,7 +118,7 @@
 <body>
 <header class="hero">
   <div class="wrap">
-    <h1>Σύνθετος Χάρτης Κάλυψης Γης — Πάμφιλα, Μυτιλήνη (Λέσβος)</h1>
+    <h1>Σύνθετος Χάρτης Κάλυψης Γης - Πάμφιλα, Μυτιλήνη (Λέσβος)</h1>
     <p>Πώς φτιάχτηκε ο σύνθετος χάρτης: από τα δεδομένα του MicaSense Altum-PT και την ταξινόμηση
        DeepLabV3 + PointRend, μέχρι το τελικό poster με τρεις διαγώνιες θεματικές ζώνες.</p>
     <div class="chips">
@@ -146,52 +146,53 @@
 <main>
   <section id="overview">
     <h2><span class="num">1</span>Επισκόπηση</h2>
-    <p class="lead">Το τελικό poster (v12b). Σύρε για μετακίνηση όταν έχεις κάνει zoom· βελάκια για κατεύθυνση· πλήρης οθόνη με κουμπί.</p>
+    <p class="lead">Ο τελικός σύνθετος χάρτης κάλυψης γης. Διαθέσιμος για λήψη σε PNG και PDF, ή προβολή σε πλήρη οθόνη με δυνατότητα μεγέθυνσης.</p>
     <div class="fswrap" id="fs_ov">
       <div class="toolbar">
         <button class="tbtn" data-act="in" data-v="ov" title="Μεγέθυνση">+</button>
         <button class="tbtn" data-act="out" data-v="ov" title="Σμίκρυνση">−</button>
         <button class="tbtn wide" data-act="reset" data-v="ov">Επαναφορά</button>
         <button class="tbtn wide fsbtn" data-act="fs" data-v="ov">⤢ Πλήρης οθόνη</button>
+        <a class="tbtn wide" href="downloads/hero_map.png" download>⬇ PNG</a>
+        <a class="tbtn wide" href="downloads/hero_map.pdf" download>⬇ PDF</a>
         <button class="tbtn wide exitbtn" data-act="exit">✕ Έξοδος</button>
       </div>
       <div class="ovpanel" data-surf="ov"><img id="ov_img" src="assets_html/final_hero.jpg" alt="Τελικό poster"></div>
-      <figcaption>Κλικ-σύρε για μετακίνηση · ροδέλα/κουμπιά/βελάκια για zoom &amp; κατεύθυνση.</figcaption>
+      <figcaption>Μεγέθυνση με τα κουμπιά ή τη ροδέλα και μετακίνηση με σύρσιμο ή τα βελάκια.</figcaption>
     </div>
   </section>
 
   <section id="input">
     <h2><span class="num">2</span>Δεδομένα εισόδου</h2>
-    <p class="lead">Όλες οι πηγές ευθυγραμμίζονται σε κοινό κάναβο (extent E = αποτύπωμα nDSM, κελί 0,12 m, 4143×2927).</p>
+    <p class="lead">Πέντε γεωαναφερμένα επίπεδα από την ίδια αεροπορική λήψη, ευθυγραμμισμένα στο ίδιο σύστημα αναφοράς.</p>
     <div class="grid g2">
       <div class="card">
         <table>
           <tr><th>Αισθητήρας</th><td>MicaSense Altum-PT (πολυφασματικό + θερμικό + πανχρωματικό), Σεπτ. 2025</td></tr>
-          <tr><th>RGB ορθο</th><td><code>composite_CS.tif</code> — φυσικό χρώμα</td></tr>
-          <tr><th>Ταξινομημένη</th><td><code>deeplab_50a.tif</code> — 7 κλάσεις (1–7)</td></tr>
-          <tr><th>nDSM</th><td><code>nDSM.tif</code> — ύψος, 0–25 m</td></tr>
-          <tr><th>Θερμικό</th><td>True Ortho — ≈ 19,3–61,9 °C</td></tr>
+          <tr><th>RGB ορθο</th><td>Ορθοεικόνα φυσικού χρώματος (ορατό φάσμα)</td></tr>
+          <tr><th>Ταξινομημένη</th><td>Χάρτης ταξινόμησης - 7 κλάσεις κάλυψης γης</td></tr>
+          <tr><th>nDSM</th><td>Κανονικοποιημένο ύψος επιφάνειας, 0-25 m</td></tr>
+          <tr><th>Θερμικό</th><td>True Ortho - ≈ 19,3–61,9 °C</td></tr>
           <tr><th>Hillshade</th><td>DSM Shaded Relief</td></tr>
           <tr><th>Σύστημα</th><td>EPSG:32635 · GSD 4,52 cm · ≈ 500×350 m</td></tr>
         </table>
       </div>
       <div class="card">
         <h3>Κλάσεις ταξινόμησης &amp; κάλυψη</h3>
-        <div class="sw"><span class="chipc" style="background:var(--bare)"></span> Γυμνό έδαφος — 48,5%</div>
-        <div class="sw"><span class="chipc" style="background:var(--tree)"></span> Δέντρο — 36,7%</div>
-        <div class="sw"><span class="chipc" style="background:var(--build)"></span> Κτίριο — 4,6%</div>
-        <div class="sw"><span class="chipc" style="background:var(--road)"></span> Δρόμος — 3,9%</div>
-        <div class="sw"><span class="chipc" style="background:var(--shadow)"></span> Σκίαση/θόρυβος — 3,3%</div>
-        <div class="sw"><span class="chipc" style="background:var(--grass)"></span> Γρασίδι — 2,9%</div>
-        <div class="sw"><span class="chipc" style="background:var(--veh)"></span> Όχημα — 0,2%</div>
+        <div class="sw"><span class="chipc" style="background:var(--bare)"></span> Γυμνό έδαφος - 48,5%</div>
+        <div class="sw"><span class="chipc" style="background:var(--tree)"></span> Δέντρο - 36,7%</div>
+        <div class="sw"><span class="chipc" style="background:var(--build)"></span> Κτίριο - 4,6%</div>
+        <div class="sw"><span class="chipc" style="background:var(--road)"></span> Δρόμος - 3,9%</div>
+        <div class="sw"><span class="chipc" style="background:var(--shadow)"></span> Σκίαση/θόρυβος - 3,3%</div>
+        <div class="sw"><span class="chipc" style="background:var(--grass)"></span> Γρασίδι - 2,9%</div>
+        <div class="sw"><span class="chipc" style="background:var(--veh)"></span> Όχημα - 0,2%</div>
       </div>
     </div>
   </section>
 
   <section id="views">
-    <h2><span class="num">3</span>3+1 Προβολές — συγχρονισμένο zoom</h2>
-    <p class="lead">Co-registered στο ίδιο extent. Σύρε ή κάνε zoom σε οποιοδήποτε panel και τα άλλα 3 δείχνουν
-       την ίδια περιοχή. Βελάκια = κατεύθυνση. Περιήγηση κλειδωμένη εντός ορίων.</p>
+    <h2><span class="num">3</span>3+1 Προβολές - συγχρονισμένο zoom</h2>
+    <p class="lead">Και τα τέσσερα κανάλια είναι ευθυγραμμισμένα στην ίδια περιοχή. Η μεγέθυνση ή η μετακίνηση σε ένα panel ενημερώνει ταυτόχρονα και τα υπόλοιπα.</p>
     <div class="fswrap" id="fs_sync">
       <div class="toolbar">
         <button class="tbtn" data-act="in" data-v="sy">+</button>
@@ -199,7 +200,7 @@
         <button class="tbtn wide" data-act="reset" data-v="sy">Επαναφορά</button>
         <button class="tbtn wide fsbtn" data-act="fs" data-v="sy">⤢ Πλήρης οθόνη</button>
         <button class="tbtn wide exitbtn" data-act="exit">✕ Έξοδος</button>
-        <span class="hint">σύρε · ροδέλα · βελάκια</span>
+        <span class="hint">Σύρσιμο, ροδέλα ή βελάκια για περιήγηση.</span>
       </div>
       <div class="syncwrap">
         <div class="syncgrid">
@@ -217,9 +218,8 @@
   </section>
 
   <section id="blend">
-    <h2><span class="num">4</span>Σύνθεση — διαγώνιες ζώνες</h2>
-    <p class="lead">nDSM πάνω-αριστερά, θερμικό κάτω-δεξιά, ταξινόμηση το υπόλοιπο. Τα sliders αλλάζουν το
-       μέγεθος κάθε ζώνης (σύνολο 100%). Έχει zoom/pan/πλήρη οθόνη όπως οι 3+1 προβολές.</p>
+    <h2><span class="num">4</span>Σύνθεση - διαγώνιες ζώνες</h2>
+    <p class="lead">Το nDSM καταλαμβάνει την πάνω-αριστερή γωνία, το θερμικό την κάτω-δεξιά και η ταξινόμηση το υπόλοιπο. Τα sliders ρυθμίζουν το μέγεθος κάθε ζώνης, με σταθερό άθροισμα 100%.</p>
     <div class="fswrap" id="fs_diag">
       <div class="toolbar">
         <button class="tbtn" data-act="in" data-v="dg">+</button>
@@ -259,7 +259,7 @@
     <h2><span class="num">5</span>Εργαλεία υλοποίησης</h2>
     <div class="grid g3">
       <div class="card"><h3>Συλλογή &amp; επεξεργασία</h3>
-        <ul class="clean"><li>MicaSense Altum-PT</li><li>Drone2Map — ορθοεικόνες, DSM</li><li>ArcGIS Pro 3.6</li><li>ArcGIS Online</li></ul></div>
+        <ul class="clean"><li>MicaSense Altum-PT</li><li>Drone2Map - ορθοεικόνες, DSM</li><li>ArcGIS Pro 3.6</li><li>ArcGIS Online</li></ul></div>
       <div class="card"><h3>Ταξινόμηση</h3>
         <ul class="clean"><li>DeepLabV3 + PointRend</li><li>ResNet-101</li><li>Είσοδος 7-Band</li><li>7 κλάσεις</li></ul></div>
       <div class="card"><h3>Σύνθεση (Python)</h3>
@@ -267,8 +267,8 @@
     </div>
     <div class="card" style="margin-top:16px">
       <h3>Pipeline δύο βημάτων</h3>
-      <p><b>STEP 1 — <code>render_hero_panels.py</code>:</b> resample στο E, εξαγωγή classified/arrays/φακών/meta.</p>
-      <p><b>STEP 2 — <code>compose_hero*.py</code>:</b> recolor, shaded-relief, διαγώνιες ζώνες, ετικέτες, φακοί, υπόμνημα, ράμπες.</p>
+      <p><b>STEP 1 - <code>render_hero_panels.py</code>:</b> resample στο E, εξαγωγή classified/arrays/φακών/meta.</p>
+      <p><b>STEP 2 - <code>compose_hero*.py</code>:</b> recolor, shaded-relief, διαγώνιες ζώνες, ετικέτες, φακοί, υπόμνημα, ράμπες.</p>
       <p class="pill">v11→v12: arcpy-free μηχανή <code>compose_hero_param.py</code> με log υπερπαραμέτρων (id ανά εικόνα).</p>
     </div>
   </section>
@@ -315,12 +315,12 @@
   <section id="journey">
     <h2><span class="num">7</span>Διαδρομή v1 → v12</h2>
     <div class="timeline">
-      <div class="tl"><b>v1–v5</b> — concept· recolor· E = nDSM· in-map ετικέτες· χάρακας· βορράς· inset.</div>
-      <div class="tl"><b>v6–v8</b> — καμπύλες ετικέτες φακών· MAP_W→0,70· πλακίδια υπομνήματος· πλήρες custom.</div>
-      <div class="tl"><b>v9–v10</b> — area-labels· κυκλικά footprints· shaded-relief σύνθεση· Δρόμος→μαύρο.</div>
-      <div class="tl"><b>v11</b> — γρασίδι λιγότερο φωτεινό· nDSM λιγότερο μαύρο· hillshade θερμικού &amp; σκεπών· 300 dpi.</div>
-      <div class="tl"><b>v12a</b> — Σκίαση στο γκρι + μικρότερο font· διόρθωση «ι» στο PDF· +2% transparency· μουντό γρασίδι· έντονο κόκκινο.</div>
-      <div class="tl"><b>v12b</b> — αρχή ράμπας nDSM σε <b>ουδέτερο γκρι</b>. <b>Τρέχουσα εγκεκριμένη εκδοχή.</b></div>
+      <div class="tl"><b>v1–v5</b> - concept· recolor· E = nDSM· in-map ετικέτες· χάρακας· βορράς· inset.</div>
+      <div class="tl"><b>v6–v8</b> - καμπύλες ετικέτες φακών· MAP_W→0,70· πλακίδια υπομνήματος· πλήρες custom.</div>
+      <div class="tl"><b>v9–v10</b> - area-labels· κυκλικά footprints· shaded-relief σύνθεση· Δρόμος→μαύρο.</div>
+      <div class="tl"><b>v11</b> - γρασίδι λιγότερο φωτεινό· nDSM λιγότερο μαύρο· hillshade θερμικού &amp; σκεπών· 300 dpi.</div>
+      <div class="tl"><b>v12a</b> - Σκίαση στο γκρι + μικρότερο font· διόρθωση «ι» στο PDF· +2% transparency· μουντό γρασίδι· έντονο κόκκινο.</div>
+      <div class="tl"><b>v12b</b> - αρχή ράμπας nDSM σε <b>ουδέτερο γκρι</b>. <b>Τρέχουσα εγκεκριμένη εκδοχή.</b></div>
     </div>
   </section>
 

@@ -18,7 +18,7 @@ OUT  = r"D:\thesis\Ch06_build\hero_layout"
 WORK = r"D:\thesis\Ch06_build\tree_analysis_layout.aprx"
 MEDIA= r"D:\thesis\media"
 EMB  = os.path.join(MEDIA,"uaegean-university.png"); DLOGO=os.path.join(MEDIA,"tmima_logo.png")
-RSGIS= os.path.join(MEDIA,"RSGIS_logo.png"); QR=os.path.join(MEDIA,"qr_github.png")
+RSGIS= os.path.join(MEDIA,"RSGIS_logo.png"); QR=os.path.join(OUT,"qr_app.png")   # (v12b+) QR -> live web app
 INSET= r"D:\thesis\Ch06_build\_inset.png"; INSET_META=r"D:\thesis\Ch06_build\_inset_meta.json"
 CLASSIFIED_FULL = r"D:\thesis\prepare_trainig_data\prepare_training_data\results\deeplab_50a.tif"
 THERMAL_FULL    = r"D:\thesis\pamgyla_thermal\Products\2D\True Ortho\pamgyla_thermal_True_Ortho.tif"
@@ -372,9 +372,13 @@ LSQ=1.0; lbw=LSQ/FIGW; lbh=LSQ/FIGH
 if os.path.exists(EMB):
     a=fig.add_axes([0.010,0.975-lbh,lbw,lbh]); a.axis("off"); a.imshow(mpimg.imread(EMB))
 if os.path.exists(QR):
-    qx,qy=0.010,0.022
-    ov.add_patch(Rectangle((qx-0.0035,qy-0.0045),lbw+0.007,lbh+0.009,fill=False,edgecolor=NAVY,lw=1.6,zorder=11))
-    a=fig.add_axes([qx,qy,lbw,lbh]); a.axis("off"); a.imshow(mpimg.imread(QR))
+    # (v12b+) QR linking to the live web app, placed in the bottom-left margin BELOW the map
+    qs=0.78; qw=qs/FIGW; qh=qs/FIGH; qx=0.012; qy=0.006
+    ov.add_patch(Rectangle((qx-0.003,qy-0.003),qw+0.006,qh+0.006,fill=False,edgecolor=NAVY,lw=1.4,zorder=11))
+    a=fig.add_axes([qx,qy,qw,qh]); a.axis("off"); a.imshow(mpimg.imread(QR))
+    cxq=qx+qw+0.008
+    fig.text(cxq,qy+qh*0.66,"Map Creation",fontsize=8.5,fontweight="bold",color=NAVY,ha="left",va="center")
+    fig.text(cxq,qy+qh*0.30,"σάρωσε → διαδραστική παρουσίαση",fontsize=6.6,color="#555",ha="left",va="center")
 RH=0.60; rh=RH/FIGH
 if os.path.exists(DLOGO):
     dw=RH/FIGW*(384/123); a=fig.add_axes([0.988-dw,0.975-rh,dw,rh]); a.axis("off"); a.imshow(mpimg.imread(DLOGO))
@@ -390,7 +394,7 @@ _log=os.path.join(OUT,"compose_runs_log.txt")
 _knobs=dict(GRASS_NEW=GRASS_NEW,BARE_NEW=BARE_NEW,TREE_NEW=TREE_NEW,CLASSIFIED_ALPHA=CLASSIFIED_ALPHA,
             RELIEF_DARK=RELIEF_DARK,RELIEF_LITE=RELIEF_LITE,ROAD_ALPHA=ROAD_ALPHA,ND_FLOOR=ND_FLOOR,
             TH_HS_DARK=TH_HS_DARK,TH_HS_LITE=TH_HS_LITE,ROOF_DARK=ROOF_DARK,ROOF_LITE=ROOF_LITE,
-            RED_NEW=RED_NEW,TH_ZONE_ALPHA=TH_ZONE_ALPHA,SKIASI_dx=-0.0109,SKIASI_dy=-0.00276,SKIASI_fs=7)
+            RED_NEW=RED_NEW,TH_ZONE_ALPHA=TH_ZONE_ALPHA,SKIASI_dx=-0.0109,SKIASI_dy=-0.00276)
 with open(_log,"a",encoding="utf-8") as _f:
     _f.write("[%s] id=%s\n"%(_dt.datetime.now().isoformat(timespec="seconds"),RUN_ID))
     _f.write("  png=%s\n  pdf=%s\n"%(os.path.basename(png),os.path.basename(pdf)))
