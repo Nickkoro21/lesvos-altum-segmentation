@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Σύνθετος Χάρτης Κάλυψης Γης — Πώς φτιάχτηκε</title>
+<style>
+  :root{
+    --navy:#1F4E79; --navy2:#2C6CA8; --ink:#1d2329; --muted:#5b6670;
+    --line:#e3e7ec; --bg:#f6f8fa; --card:#ffffff;
+    --tree:#1B5E20; --grass:#588233; --build:#EE2E22; --road:#000000;
+    --veh:#FFFF00; --bare:#7A4A36; --shadow:#343434;
+    --cCl:#2f7d3a; --cNd:#5b6f7a; --cTh:#c2562b;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+       color:var(--ink);background:var(--bg);line-height:1.6;font-size:16px}
+  a{color:var(--navy2);text-decoration:none}
+  header.hero{background:linear-gradient(135deg,#173a5c,#1F4E79 55%,#2C6CA8);color:#fff;padding:54px 22px 30px}
+  header.hero .wrap{max-width:1080px;margin:0 auto}
+  header.hero h1{margin:0 0 6px;font-size:30px;font-weight:800}
+  header.hero p{margin:4px 0;opacity:.92;max-width:760px}
+  .chips{margin-top:14px;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:4px 10px;border-radius:999px;font-size:12.5px}
+  nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+  nav .wrap{max-width:1080px;margin:0 auto;display:flex;flex-wrap:wrap;gap:2px;padding:6px 12px}
+  nav a{padding:8px 12px;border-radius:8px;color:var(--muted);font-size:13.5px;font-weight:600}
+  nav a:hover{background:var(--bg);color:var(--navy)}
+  main{max-width:1080px;margin:0 auto;padding:10px 22px 80px}
+  section{padding:34px 0 8px;border-bottom:1px solid var(--line)}
+  section:last-child{border-bottom:none}
+  h2{color:var(--navy);font-size:23px;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  h2 .num{font-size:13px;background:var(--navy);color:#fff;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .lead{color:var(--muted);margin:2px 0 18px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 1px 2px rgba(20,40,60,.04)}
+  .card h3{margin:0 0 6px;color:var(--navy);font-size:16px}
+  .card p{margin:4px 0;font-size:14px;color:var(--muted)}
+  figcaption{font-size:12.5px;color:var(--muted);margin-top:8px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--navy);font-weight:700;width:34%}
+  code{background:#eef2f6;padding:1px 6px;border-radius:5px;font-size:13px}
+  /* toolbar + buttons */
+  .toolbar{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;align-items:center}
+  .tbtn{cursor:pointer;border:1px solid var(--navy);background:#fff;color:var(--navy);height:34px;min-width:38px;
+        border-radius:8px;font-size:15px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;padding:0 10px}
+  .tbtn.wide{font-size:13px}
+  .tbtn:hover{background:var(--navy);color:#fff}
+  .hint{font-size:12px;color:var(--muted)}
+  .exitbtn{display:none;border-color:#c0392b;color:#c0392b}
+  .exitbtn:hover{background:#c0392b;color:#fff}
+  /* fullscreen wrapper */
+  .fswrap{border-radius:14px}
+  .fswrap:fullscreen{background:#0e151b;padding:14px;display:flex;flex-direction:column;overflow:auto}
+  .fswrap:fullscreen .toolbar{margin:0 0 12px}
+  .fswrap:fullscreen .fsbtn{display:none}
+  .fswrap:fullscreen .exitbtn{display:inline-flex}
+  .fswrap:fullscreen .hint{color:#aab4bd}
+  /* generic viewer panel */
+  .panel,.stage,.ovpanel{position:relative;overflow:hidden;border-radius:10px;background:#1b262e;touch-action:none;cursor:default}
+  .panel.pan,.stage.pan,.ovpanel.pan{cursor:grab}
+  .panel.pan:active,.stage.pan:active,.ovpanel.pan:active{cursor:grabbing}
+  .panel img,.stage img,.ovpanel img{position:absolute;inset:0;width:100%;height:100%;transform-origin:0 0;
+        will-change:transform;user-select:none;-webkit-user-drag:none}
+  .panel img,.stage img{object-fit:cover}
+  .ovpanel img{object-fit:cover}
+  .pl{position:absolute;left:8px;top:8px;z-index:5;background:rgba(15,25,35,.82);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px;pointer-events:none}
+  .pl.nd{border-left:4px solid var(--cNd)}.pl.cl{border-left:4px solid var(--cCl)}.pl.th{border-left:4px solid var(--cTh)}.pl.rgb{border-left:4px solid #7a5cab}
+  /* 3+1 grid */
+  .syncwrap{background:#0e151b;border:1px solid var(--line);border-radius:14px;padding:10px}
+  .fswrap:fullscreen .syncwrap{flex:1;border:none;display:flex;align-items:center;justify-content:center}
+  .syncgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:760px){.syncgrid{grid-template-columns:1fr}}
+  .panel{aspect-ratio:1180/833}
+  .fswrap:fullscreen .syncgrid{grid-template-columns:auto auto;grid-template-rows:1fr 1fr;justify-content:center;align-content:center;height:100%}
+  .fswrap:fullscreen .panel{height:calc((100vh - 130px)/2);width:auto;aspect-ratio:1180/833}
+  /* composite stage */
+  .stage{aspect-ratio:1180/833;border:1px solid var(--line);background:#fff}
+  .fswrap:fullscreen .stage{height:calc(100vh - 250px);width:auto;aspect-ratio:1180/833;margin:0 auto}
+  #d_nd{z-index:2}#d_th{z-index:3}#d_cl{z-index:1}
+  /* overview panel */
+  .ovpanel{aspect-ratio:1500/876;border:1px solid var(--line);background:#fff}
+  .fswrap:fullscreen .ovpanel{height:calc(100vh - 120px);width:auto;aspect-ratio:1500/876;margin:auto}
+  /* sliders + coverage */
+  .controls{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:14px}
+  @media(max-width:760px){.controls{grid-template-columns:1fr}}
+  .ctl label{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--navy)}
+  .fswrap:fullscreen .ctl label{color:#fff}
+  .ctl input[type=range]{width:100%}
+  .covhead{font-size:13px;font-weight:700;color:var(--navy);margin:14px 0 6px;display:flex;justify-content:space-between}
+  .fswrap:fullscreen .covhead,.fswrap:fullscreen .covlbl{color:#dfe6ec}
+  .bar{display:flex;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#eef2f6}
+  .seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;white-space:nowrap;transition:width .18s ease;min-width:0;overflow:hidden}
+  .seg-cl{background:var(--cCl)}.seg-nd{background:var(--cNd)}.seg-th{background:var(--cTh)}
+  .covlbl{display:flex;flex-wrap:wrap;gap:16px;margin-top:7px;font-size:13px;color:var(--muted)}
+  .dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .dcl{background:var(--cCl)}.dnd{background:var(--cNd)}.dth{background:var(--cTh)}
+  .sw{display:flex;align-items:center;gap:10px;font-size:14px;padding:5px 0}
+  .chipc{width:26px;height:26px;border-radius:6px;border:1px solid rgba(0,0,0,.15);flex:0 0 auto}
+  .ramp{height:24px;border-radius:6px;border:1px solid var(--line)}
+  .ramp.nd{background:linear-gradient(90deg,#3B4248,#8C9094,#C3B488,#E8DFC2,#F7F1DE)}
+  .ramp.th{background:linear-gradient(90deg,#000004,#420a68,#932667,#dd513a,#fca50a,#fcffa4)}
+  .mono{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+  ul.clean{margin:6px 0;padding-left:18px}ul.clean li{margin:3px 0;font-size:14px}
+  .timeline{position:relative;margin:8px 0 0;padding-left:20px}
+  .timeline::before{content:"";position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--line)}
+  .tl{position:relative;padding:6px 0 14px 14px}
+  .tl::before{content:"";position:absolute;left:-1px;top:11px;width:11px;height:11px;border-radius:50%;background:var(--navy);border:2px solid #fff;box-shadow:0 0 0 2px var(--line)}
+  .tl b{color:var(--navy)}
+  .foot{color:var(--muted);font-size:13px;margin-top:26px;text-align:center}
+  .pill{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <h1>Σύνθετος Χάρτης Κάλυψης Γης — Πάμφιλα, Μυτιλήνη (Λέσβος)</h1>
+    <p>Πώς φτιάχτηκε ο σύνθετος χάρτης: από τα δεδομένα του MicaSense Altum-PT και την ταξινόμηση
+       DeepLabV3 + PointRend, μέχρι το τελικό poster με τρεις διαγώνιες θεματικές ζώνες.</p>
+    <div class="chips">
+      <span class="chip">MicaSense Altum-PT · 7-Band</span>
+      <span class="chip">DeepLabV3 + PointRend (ResNet-101)</span>
+      <span class="chip">EPSG:32635 · GSD 4,52 cm</span>
+      <span class="chip">ArcGIS Pro · Drone2Map · Python</span>
+      <span class="chip">Έκδοση v12b</span>
+    </div>
+  </div>
+</header>
+
+<nav>
+  <div class="wrap">
+    <a href="#overview">Επισκόπηση</a>
+    <a href="#input">Δεδομένα εισόδου</a>
+    <a href="#views">3+1 Προβολές</a>
+    <a href="#blend">Σύνθεση (διαγώνια)</a>
+    <a href="#tools">Εργαλεία</a>
+    <a href="#ratios">Αναλογίες &amp; Χρώματα</a>
+    <a href="#journey">Διαδρομή v1→v12</a>
+  </div>
+</nav>
+
+<main>
+  <section id="overview">
+    <h2><span class="num">1</span>Επισκόπηση</h2>
+    <p class="lead">Το τελικό poster (v12b). Σύρε για μετακίνηση όταν έχεις κάνει zoom· βελάκια για κατεύθυνση· πλήρης οθόνη με κουμπί.</p>
+    <div class="fswrap" id="fs_ov">
+      <div class="toolbar">
+        <button class="tbtn" data-act="in" data-v="ov" title="Μεγέθυνση">+</button>
+        <button class="tbtn" data-act="out" data-v="ov" title="Σμίκρυνση">−</button>
+        <button class="tbtn wide" data-act="reset" data-v="ov">Επαναφορά</button>
+        <button class="tbtn wide fsbtn" data-act="fs" data-v="ov">⤢ Πλήρης οθόνη</button>
+        <button class="tbtn wide exitbtn" data-act="exit">✕ Έξοδος</button>
+      </div>
+      <div class="ovpanel" data-surf="ov"><img id="ov_img" src="assets_html/final_hero.jpg" alt="Τελικό poster"></div>
+      <figcaption>Κλικ-σύρε για μετακίνηση · ροδέλα/κουμπιά/βελάκια για zoom &amp; κατεύθυνση.</figcaption>
+    </div>
+  </section>
+
+  <section id="input">
+    <h2><span class="num">2</span>Δεδομένα εισόδου</h2>
+    <p class="lead">Όλες οι πηγές ευθυγραμμίζονται σε κοινό κάναβο (extent E = αποτύπωμα nDSM, κελί 0,12 m, 4143×2927).</p>
+    <div class="grid g2">
+      <div class="card">
+        <table>
+          <tr><th>Αισθητήρας</th><td>MicaSense Altum-PT (πολυφασματικό + θερμικό + πανχρωματικό), Σεπτ. 2025</td></tr>
+          <tr><th>RGB ορθο</th><td><code>composite_CS.tif</code> — φυσικό χρώμα</td></tr>
+          <tr><th>Ταξινομημένη</th><td><code>deeplab_50a.tif</code> — 7 κλάσεις (1–7)</td></tr>
+          <tr><th>nDSM</th><td><code>nDSM.tif</code> — ύψος, 0–25 m</td></tr>
+          <tr><th>Θερμικό</th><td>True Ortho — ≈ 19,3–61,9 °C</td></tr>
+          <tr><th>Hillshade</th><td>DSM Shaded Relief</td></tr>
+          <tr><th>Σύστημα</th><td>EPSG:32635 · GSD 4,52 cm · ≈ 500×350 m</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Κλάσεις ταξινόμησης &amp; κάλυψη</h3>
+        <div class="sw"><span class="chipc" style="background:var(--bare)"></span> Γυμνό έδαφος — 48,5%</div>
+        <div class="sw"><span class="chipc" style="background:var(--tree)"></span> Δέντρο — 36,7%</div>
+        <div class="sw"><span class="chipc" style="background:var(--build)"></span> Κτίριο — 4,6%</div>
+        <div class="sw"><span class="chipc" style="background:var(--road)"></span> Δρόμος — 3,9%</div>
+        <div class="sw"><span class="chipc" style="background:var(--shadow)"></span> Σκίαση/θόρυβος — 3,3%</div>
+        <div class="sw"><span class="chipc" style="background:var(--grass)"></span> Γρασίδι — 2,9%</div>
+        <div class="sw"><span class="chipc" style="background:var(--veh)"></span> Όχημα — 0,2%</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="views">
+    <h2><span class="num">3</span>3+1 Προβολές — συγχρονισμένο zoom</h2>
+    <p class="lead">Co-registered στο ίδιο extent. Σύρε ή κάνε zoom σε οποιοδήποτε panel και τα άλλα 3 δείχνουν
+       την ίδια περιοχή. Βελάκια = κατεύθυνση. Περιήγηση κλειδωμένη εντός ορίων.</p>
+    <div class="fswrap" id="fs_sync">
+      <div class="toolbar">
+        <button class="tbtn" data-act="in" data-v="sy">+</button>
+        <button class="tbtn" data-act="out" data-v="sy">−</button>
+        <button class="tbtn wide" data-act="reset" data-v="sy">Επαναφορά</button>
+        <button class="tbtn wide fsbtn" data-act="fs" data-v="sy">⤢ Πλήρης οθόνη</button>
+        <button class="tbtn wide exitbtn" data-act="exit">✕ Έξοδος</button>
+        <span class="hint">σύρε · ροδέλα · βελάκια</span>
+      </div>
+      <div class="syncwrap">
+        <div class="syncgrid">
+          <div class="panel" data-surf="sy"><span class="pl rgb">RGB · φυσικό χρώμα</span>
+            <img id="p_rgb" src="assets_html/_h_rgb.jpg" alt="RGB" onerror="this.style.display='none'"></div>
+          <div class="panel" data-surf="sy"><span class="pl cl">Ταξινόμηση</span>
+            <img id="p_cl" src="assets_html/layer_classified.png" alt="Classified"></div>
+          <div class="panel" data-surf="sy"><span class="pl th">Θερμικό</span>
+            <img id="p_th" src="assets_html/layer_thermal.png" alt="Thermal"></div>
+          <div class="panel" data-surf="sy"><span class="pl nd">nDSM · Ύψος</span>
+            <img id="p_nd" src="assets_html/layer_ndsm.png" alt="nDSM"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="blend">
+    <h2><span class="num">4</span>Σύνθεση — διαγώνιες ζώνες</h2>
+    <p class="lead">nDSM πάνω-αριστερά, θερμικό κάτω-δεξιά, ταξινόμηση το υπόλοιπο. Τα sliders αλλάζουν το
+       μέγεθος κάθε ζώνης (σύνολο 100%). Έχει zoom/pan/πλήρη οθόνη όπως οι 3+1 προβολές.</p>
+    <div class="fswrap" id="fs_diag">
+      <div class="toolbar">
+        <button class="tbtn" data-act="in" data-v="dg">+</button>
+        <button class="tbtn" data-act="out" data-v="dg">−</button>
+        <button class="tbtn wide" data-act="reset" data-v="dg">Επαναφορά zoom</button>
+        <button class="tbtn wide" id="d_reset">Ζώνες 20/60/20</button>
+        <button class="tbtn wide fsbtn" data-act="fs" data-v="dg">⤢ Πλήρης οθόνη</button>
+        <button class="tbtn wide exitbtn" data-act="exit">✕ Έξοδος</button>
+      </div>
+      <div class="stage" data-surf="dg" id="d_stage">
+        <img id="d_cl" src="assets_html/layer_classified.png" alt="Ταξινόμηση">
+        <img id="d_nd" src="assets_html/layer_ndsm.png" alt="nDSM">
+        <img id="d_th" src="assets_html/layer_thermal.png" alt="Θερμικό">
+      </div>
+      <div class="controls">
+        <div class="ctl"><label>nDSM (πάνω-αριστερά) <span id="dv_nd">20%</span></label>
+          <input type="range" id="ds_nd" min="0" max="45" value="20"></div>
+        <div class="ctl"><label>Θερμικό (κάτω-δεξιά) <span id="dv_th">20%</span></label>
+          <input type="range" id="ds_th" min="0" max="45" value="20"></div>
+      </div>
+      <div class="covhead"><span>Κατανομή κάλυψης</span><span class="pill">σύνολο 100%</span></div>
+      <div class="bar">
+        <span class="seg seg-cl" id="b_cl">60%</span>
+        <span class="seg seg-nd" id="b_nd">20%</span>
+        <span class="seg seg-th" id="b_th">20%</span>
+      </div>
+      <div class="covlbl">
+        <span><i class="dot dcl"></i>Ταξινόμηση <b id="t_cl">60%</b></span>
+        <span><i class="dot dnd"></i>nDSM <b id="t_nd">20%</b></span>
+        <span><i class="dot dth"></i>Θερμικό <b id="t_th">20%</b></span>
+      </div>
+    </div>
+    <p class="pill">Πραγματική κάλυψη της τελικής σύνθεσης (feathered): Ταξινόμηση ≈ 64,8% · nDSM ≈ 18,4% · Θερμικό ≈ 16,8%.</p>
+  </section>
+
+  <section id="tools">
+    <h2><span class="num">5</span>Εργαλεία υλοποίησης</h2>
+    <div class="grid g3">
+      <div class="card"><h3>Συλλογή &amp; επεξεργασία</h3>
+        <ul class="clean"><li>MicaSense Altum-PT</li><li>Drone2Map — ορθοεικόνες, DSM</li><li>ArcGIS Pro 3.6</li><li>ArcGIS Online</li></ul></div>
+      <div class="card"><h3>Ταξινόμηση</h3>
+        <ul class="clean"><li>DeepLabV3 + PointRend</li><li>ResNet-101</li><li>Είσοδος 7-Band</li><li>7 κλάσεις</li></ul></div>
+      <div class="card"><h3>Σύνθεση (Python)</h3>
+        <ul class="clean"><li><code>arcpy</code></li><li><code>numpy</code>/<code>scipy</code></li><li><code>matplotlib</code></li><li><code>PIL</code></li></ul></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Pipeline δύο βημάτων</h3>
+      <p><b>STEP 1 — <code>render_hero_panels.py</code>:</b> resample στο E, εξαγωγή classified/arrays/φακών/meta.</p>
+      <p><b>STEP 2 — <code>compose_hero*.py</code>:</b> recolor, shaded-relief, διαγώνιες ζώνες, ετικέτες, φακοί, υπόμνημα, ράμπες.</p>
+      <p class="pill">v11→v12: arcpy-free μηχανή <code>compose_hero_param.py</code> με log υπερπαραμέτρων (id ανά εικόνα).</p>
+    </div>
+  </section>
+
+  <section id="ratios">
+    <h2><span class="num">6</span>Αναλογίες εμφάνισης &amp; χρώματα</h2>
+    <div class="grid g2">
+      <div class="card"><h3>Αναλογίες / γεωμετρία</h3>
+        <table>
+          <tr><th>Καμβάς</th><td>26,0 × 15,2 in → λόγος ≈ <b>1,71</b></td></tr>
+          <tr><th>Άξονας χάρτη</th><td>MAP_X 0,020 · MAP_W <b>0,700</b> · MAP_TOP 0,905</td></tr>
+          <tr><th>Λόγος χάρτη</th><td>ASP ≈ <b>1,416</b> (497×351 m)</td></tr>
+          <tr><th>Εκτύπωση</th><td>≈ 66 × 38,6 cm · χάρτης ≈ 46,2 × 32,7 cm</td></tr>
+          <tr><th>Ανάλυση</th><td><b>300 dpi</b> → 7800 × 4560 px · κλίμακα ≈ 1:1.100</td></tr>
+        </table></div>
+      <div class="card"><h3>Στρώσεις &amp; διαφάνειες (v12b)</h3>
+        <table>
+          <tr><th>Ταξινόμηση</th><td>opacity 0,79</td></tr>
+          <tr><th>Shaded-relief</th><td>σκιά ×0,62 · φως ×0,34</td></tr>
+          <tr><th>nDSM ζώνη</th><td>floor 0,66</td></tr>
+          <tr><th>Θερμικό</th><td>hillshade 0,45/0,25 · opacity 0,94</td></tr>
+          <tr><th>Σκεπές</th><td>relief boost 0,55/0,12</td></tr>
+        </table></div>
+    </div>
+    <div class="grid g2" style="margin-top:16px">
+      <div class="card"><h3>Χρώματα κλάσεων</h3>
+        <div class="sw"><span class="chipc" style="background:var(--tree)"></span> Δέντρο <span class="mono">#1B5E20</span></div>
+        <div class="sw"><span class="chipc" style="background:var(--grass)"></span> Γρασίδι <span class="mono">#588233</span></div>
+        <div class="sw"><span class="chipc" style="background:var(--build)"></span> Κτίριο <span class="mono">#EE2E22</span></div>
+        <div class="sw"><span class="chipc" style="background:var(--road)"></span> Δρόμος <span class="mono">#000000</span></div>
+        <div class="sw"><span class="chipc" style="background:var(--veh)"></span> Όχημα <span class="mono">#FFFF00</span></div>
+        <div class="sw"><span class="chipc" style="background:var(--bare)"></span> Γυμνό έδαφος <span class="mono">#7A4A36</span></div>
+        <div class="sw"><span class="chipc" style="background:var(--shadow)"></span> Σκίαση/θόρυβος <span class="mono">#343434</span></div>
+      </div>
+      <div class="card"><h3>Συνεχείς ράμπες</h3>
+        <p style="margin:2px 0 4px;font-size:14px;color:var(--navy);font-weight:700">Ύψος nDSM (0–25 m)</p>
+        <div class="ramp nd"></div><p class="mono">#3B4248 · #8C9094 · #C3B488 · #E8DFC2 · #F7F1DE</p>
+        <p style="margin:10px 0 4px;font-size:14px;color:var(--navy);font-weight:700">Θερμοκρασία (≈20–60 °C)</p>
+        <div class="ramp th"></div><p class="mono">inferno</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="journey">
+    <h2><span class="num">7</span>Διαδρομή v1 → v12</h2>
+    <div class="timeline">
+      <div class="tl"><b>v1–v5</b> — concept· recolor· E = nDSM· in-map ετικέτες· χάρακας· βορράς· inset.</div>
+      <div class="tl"><b>v6–v8</b> — καμπύλες ετικέτες φακών· MAP_W→0,70· πλακίδια υπομνήματος· πλήρες custom.</div>
+      <div class="tl"><b>v9–v10</b> — area-labels· κυκλικά footprints· shaded-relief σύνθεση· Δρόμος→μαύρο.</div>
+      <div class="tl"><b>v11</b> — γρασίδι λιγότερο φωτεινό· nDSM λιγότερο μαύρο· hillshade θερμικού &amp; σκεπών· 300 dpi.</div>
+      <div class="tl"><b>v12a</b> — Σκίαση στο γκρι + μικρότερο font· διόρθωση «ι» στο PDF· +2% transparency· μουντό γρασίδι· έντονο κόκκινο.</div>
+      <div class="tl"><b>v12b</b> — αρχή ράμπας nDSM σε <b>ουδέτερο γκρι</b>. <b>Τρέχουσα εγκεκριμένη εκδοχή.</b></div>
+    </div>
+  </section>
+
+  <p class="foot">Πάμφιλα, Μυτιλήνη (Λέσβος) · RSGIS Lab, Τμήμα Γεωγραφίας, Πανεπιστήμιο Αιγαίου ·
+     Επιβλέπων: Δρ. Χρ. Βασιλάκος · Δημιουργός: Ν. Κορωνιάδης · Ιούνιος 2026</p>
+</main>
+
+<script>
+var activeViewer=null;
+function Viewer(imgs, surfaces, panels){
+  var s=1,tx=0,ty=0,self;
+  function clamp(){var lo=Math.min(0,1-s); if(tx>0)tx=0; if(ty>0)ty=0; if(tx<lo)tx=lo; if(ty<lo)ty=lo;}
+  function apply(){clamp(); var t='translate('+(tx*100)+'%,'+(ty*100)+'%) scale('+s+')';
+    imgs.forEach(function(im){im.style.transform=t;});
+    panels.forEach(function(p){p.classList.toggle('pan', s>1.001);});}
+  function zoomAt(fx,fy,z){var ns=Math.max(1,Math.min(10,s*z)); if(Math.abs(ns-s)<1e-4)return;
+    var ux=(fx-tx)/s, uy=(fy-ty)/s; s=ns; tx=fx-ux*s; ty=fy-uy*s; apply();}
+  var drag=null;
+  surfaces.forEach(function(surf){
+    surf.addEventListener('pointerdown',function(e){activeViewer=self; if(s<=1)return;
+      e.preventDefault(); drag={x:e.clientX,y:e.clientY,w:surf.clientWidth,h:surf.clientHeight};});
+    surf.addEventListener('wheel',function(e){e.preventDefault(); activeViewer=self;
+      var r=surf.getBoundingClientRect(); zoomAt((e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height, e.deltaY<0?1.1:1/1.1);},{passive:false});
+    surf.addEventListener('mouseenter',function(){activeViewer=self;});
+  });
+  document.addEventListener('pointermove',function(e){if(!drag)return;
+    tx+=(e.clientX-drag.x)/drag.w; ty+=(e.clientY-drag.y)/drag.h; drag.x=e.clientX; drag.y=e.clientY; apply();});
+  document.addEventListener('pointerup',function(){drag=null;});
+  self={zin:function(){zoomAt(0.5,0.5,1.25);}, zout:function(){zoomAt(0.5,0.5,1/1.25);},
+    reset:function(){s=1;tx=0;ty=0;apply();},
+    panBy:function(dx,dy){if(s<=1)return; tx+=dx;ty+=dy;apply();}, apply:apply};
+  return self;
+}
+function $(id){return document.getElementById(id);}
+function qa(sel){return Array.prototype.slice.call(document.querySelectorAll(sel));}
+
+var OV=Viewer([$('ov_img')], qa('[data-surf=ov]'), qa('[data-surf=ov]'));
+var SV=Viewer(['p_rgb','p_cl','p_th','p_nd'].map($), qa('[data-surf=sy]'), qa('[data-surf=sy]'));
+var DV=Viewer(['d_cl','d_nd','d_th'].map($), qa('[data-surf=dg]'), qa('[data-surf=dg]'));
+var VIEW={ov:OV, sy:SV, dg:DV};
+var WRAP={ov:$('fs_ov'), sy:$('fs_sync'), dg:$('fs_diag')};
+activeViewer=SV;
+
+function fsToggle(wrap,v){ if(document.fullscreenElement){document.exitFullscreen();return;}
+  if(wrap.requestFullscreen){wrap.requestFullscreen().then(function(){activeViewer=v;}).catch(function(){});} }
+qa('.tbtn').forEach(function(b){
+  b.addEventListener('click',function(){
+    var act=b.dataset.act, v=VIEW[b.dataset.v];
+    if(act==='in')v.zin(); else if(act==='out')v.zout(); else if(act==='reset')v.reset();
+    else if(act==='fs')fsToggle(WRAP[b.dataset.v],v);
+    else if(act==='exit'){if(document.fullscreenElement)document.exitFullscreen();}
+  });
+});
+document.addEventListener('fullscreenchange',function(){setTimeout(function(){OV.apply();SV.apply();DV.apply();},60);});
+document.addEventListener('keydown',function(e){
+  var k=e.key;
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(k)<0)return;
+  if(!activeViewer)return; e.preventDefault(); var d=0.07;
+  if(k==='ArrowLeft')activeViewer.panBy(d,0);
+  if(k==='ArrowRight')activeViewer.panBy(-d,0);
+  if(k==='ArrowUp')activeViewer.panBy(0,d);
+  if(k==='ArrowDown')activeViewer.panBy(0,-d);
+});
+
+/* diagonal composite zones */
+var BA=17.4;
+function clampW(v){return Math.max(0,Math.min(100,v));}
+function applyDiag(){
+  var nd=+$('ds_nd').value, th=+$('ds_th').value, cl=100-nd-th;
+  var k=Math.sqrt(Math.max(nd,0.0001)/BA), Lx=clampW(58*k), Ly=clampW(60*k);
+  var k2=Math.sqrt(Math.max(th,0.0001)/BA), Tx=clampW(60*k2), Ty=clampW(58*k2);
+  $('d_nd').style.clipPath = nd<=0 ? 'polygon(0 0,0 0,0 0)' : 'polygon(0 0,'+Lx+'% 0,0 '+Ly+'%)';
+  $('d_th').style.clipPath = th<=0 ? 'polygon(0 0,0 0,0 0)' : 'polygon(100% 100%,'+(100-Tx)+'% 100%,100% '+(100-Ty)+'%)';
+  $('dv_nd').textContent=nd+'%'; $('dv_th').textContent=th+'%';
+  function seg(id,bid,p){$(id).textContent=Math.round(p)+'%'; var b=$(bid); b.style.width=p+'%'; b.textContent=(p>=9?Math.round(p)+'%':'');}
+  seg('t_cl','b_cl',cl); seg('t_nd','b_nd',nd); seg('t_th','b_th',th);
+}
+function guard(which){var nd=+$('ds_nd').value, th=+$('ds_th').value;
+  if(nd+th>90){ if(which==='nd')$('ds_nd').value=90-th; else $('ds_th').value=90-nd; } applyDiag();}
+$('ds_nd').addEventListener('input',function(){guard('nd');});
+$('ds_th').addEventListener('input',function(){guard('th');});
+$('d_reset').addEventListener('click',function(){$('ds_nd').value=20;$('ds_th').value=20;applyDiag();});
+applyDiag();
+</script>
+</body>
+</html>
