@@ -420,13 +420,15 @@ function Viewer(imgs, surfaces, panels){
   function clamp(){var lo=Math.min(0,1-s); if(tx>0)tx=0; if(ty>0)ty=0; if(tx<lo)tx=lo; if(ty<lo)ty=lo;}
   function apply(){clamp(); var t="translate("+(tx*100)+"%,"+(ty*100)+"%) scale("+s+")";
     imgs.forEach(function(im){im.style.transform=t;}); panels.forEach(function(p){p.classList.toggle("pan",s>1.001);});}
-  function zoomAt(fx,fy,z){var ns=Math.max(1,Math.min(10,s*z)); if(Math.abs(ns-s)<1e-4)return;
+  function zoomAt(fx,fy,z){var ns=Math.max(1,Math.min(18,s*z)); if(Math.abs(ns-s)<1e-4)return;
     var ux=(fx-tx)/s, uy=(fy-ty)/s; s=ns; tx=fx-ux*s; ty=fy-uy*s; apply();}
   var drag=null;
   surfaces.forEach(function(surf){
     surf.addEventListener("pointerdown",function(e){activeViewer=self; if(s<=1)return; e.preventDefault();
       drag={x:e.clientX,y:e.clientY,w:surf.clientWidth,h:surf.clientHeight};});
-    surf.addEventListener("wheel",function(e){e.preventDefault(); activeViewer=self; var r=surf.getBoundingClientRect();
+    surf.addEventListener("wheel",function(e){
+      if(e.deltaY>0 && s<=1.0001) return;        // at min zoom, let the page scroll normally
+      e.preventDefault(); activeViewer=self; var r=surf.getBoundingClientRect();
       zoomAt((e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height, e.deltaY<0?1.1:1/1.1);},{passive:false});
     surf.addEventListener("mouseenter",function(){activeViewer=self;});
   });
