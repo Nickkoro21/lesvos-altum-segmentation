@@ -94,6 +94,20 @@
   .covlbl{display:flex;flex-wrap:wrap;gap:16px;margin-top:7px;font-size:13px;color:var(--muted)}
   .dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
   .dcl{background:var(--cCl)}.dnd{background:var(--cNd)}.dth{background:var(--cTh)}
+  .mk{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+  .marker{position:absolute;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;border:2px solid #fff;
+          box-shadow:0 0 0 2px rgba(0,0,0,.55);cursor:pointer;pointer-events:auto;display:none}
+  .marker.show{display:block}
+  .marker.v{background:#FFD400}.marker.t{background:#1B5E20}.marker.r{background:#111}
+  .mtag{position:absolute;left:50%;bottom:150%;transform:translateX(-50%);white-space:nowrap;display:none;
+        background:rgba(15,25,35,.92);color:#fff;font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px}
+  .popup{position:absolute;z-index:9;min-width:140px;max-width:240px;transform:translate(10px,10px);
+         background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.28);
+         padding:9px 11px 8px;font-size:12px;color:var(--ink);pointer-events:auto}
+  .popup h4{margin:0 0 5px;font-size:12px;color:var(--navy)}
+  .popup .kv{display:flex;justify-content:space-between;gap:16px;padding:1px 0}
+  .popup .src{margin-top:5px;font-size:10.5px;color:var(--muted)}
+  .popup .x{position:absolute;right:7px;top:4px;cursor:pointer;color:var(--muted);font-weight:700}
   .sw{display:flex;align-items:center;gap:10px;font-size:14px;padding:5px 0}
   .chipc{width:26px;height:26px;border-radius:6px;border:1px solid rgba(0,0,0,.15);flex:0 0 auto}
   .ramp{height:24px;border-radius:6px;border:1px solid var(--line)}
@@ -201,10 +215,10 @@
       </div>
       <div class="syncwrap">
         <div class="syncgrid">
-          <div class="panel" data-surf="sy"><span class="pl rgb" data-i="pl_rgb"></span><img id="p_rgb" src="assets_html/_h_rgb.jpg" alt="RGB" onerror="this.style.display='none'"></div>
-          <div class="panel" data-surf="sy"><span class="pl cl" data-i="pl_cl"></span><img id="p_cl" src="assets_html/layer_classified.png" alt="Classified"></div>
-          <div class="panel" data-surf="sy"><span class="pl th" data-i="pl_th"></span><img id="p_th" src="assets_html/layer_thermal.png" alt="Thermal"></div>
-          <div class="panel" data-surf="sy"><span class="pl nd" data-i="pl_nd"></span><img id="p_nd" src="assets_html/layer_ndsm.png" alt="nDSM"></div>
+          <div class="panel" data-surf="sy"><span class="pl rgb" data-i="pl_rgb"></span><img id="p_rgb" src="assets_html/_h_rgb.jpg" alt="RGB" onerror="this.style.display='none'"><div class="mk" data-mk="rgb"></div></div>
+          <div class="panel" data-surf="sy"><span class="pl cl" data-i="pl_cl"></span><img id="p_cl" src="assets_html/layer_classified.png" alt="Classified"><div class="mk" data-mk="cl"></div></div>
+          <div class="panel" data-surf="sy"><span class="pl th" data-i="pl_th"></span><img id="p_th" src="assets_html/layer_thermal.png" alt="Thermal"><div class="mk" data-mk="th"></div></div>
+          <div class="panel" data-surf="sy"><span class="pl nd" data-i="pl_nd"></span><img id="p_nd" src="assets_html/layer_ndsm.png" alt="nDSM"><div class="mk" data-mk="nd"></div></div>
         </div>
       </div>
     </div>
@@ -403,39 +417,45 @@ var T={
  foot:{el:"Πάμφιλα, Μυτιλήνη (Λέσβος) · RSGIS Lab, Τμήμα Γεωγραφίας, Πανεπιστήμιο Αιγαίου · Επιβλέπων: Δρ. Χρ. Βασιλάκος · Δημιουργός: Ν. Κορωνιάδης · Ιούνιος 2026",
        en:"Pamfila, Lesvos (Greece) · RSGIS Lab, Department of Geography, University of the Aegean · Supervisor: Dr. C. Vasilakos · Author: N. Koroniadis · June 2026"}
 };
+var LANG="el";
 function setLang(l){
-  document.documentElement.lang=l;
+  document.documentElement.lang=l; LANG=l;
   document.querySelectorAll("[data-i]").forEach(function(e){var t=T[e.getAttribute("data-i")]; if(t) e.innerHTML=t[l];});
   document.querySelectorAll("[data-lang]").forEach(function(b){b.classList.toggle("active", b.getAttribute("data-lang")===l);});
   try{localStorage.setItem("lcm_lang",l);}catch(_){}
+  if(typeof SV!=="undefined"&&SV)SV.apply();
 }
-document.querySelectorAll("[data-lang]").forEach(function(b){b.addEventListener("click",function(){setLang(b.getAttribute("data-lang"));});});
+function switchLang(l){setLang(l); if(typeof POP!=="undefined"&&POP&&POP.open)closePopup();}
+document.querySelectorAll("[data-lang]").forEach(function(b){b.addEventListener("click",function(){switchLang(b.getAttribute("data-lang"));});});
 var _saved="el"; try{_saved=localStorage.getItem("lcm_lang")||"el";}catch(_){}
 setLang(_saved);
 
 /* ---- viewers (shared transform) ---- */
 var activeViewer=null;
 function Viewer(imgs, surfaces, panels){
-  var s=1,tx=0,ty=0,self;
+  var s=1,tx=0,ty=0,self,hook=null;
   function clamp(){var lo=Math.min(0,1-s); if(tx>0)tx=0; if(ty>0)ty=0; if(tx<lo)tx=lo; if(ty<lo)ty=lo;}
   function apply(){clamp(); var t="translate("+(tx*100)+"%,"+(ty*100)+"%) scale("+s+")";
-    imgs.forEach(function(im){im.style.transform=t;}); panels.forEach(function(p){p.classList.toggle("pan",s>1.001);});}
-  function zoomAt(fx,fy,z){var ns=Math.max(1,Math.min(18,s*z)); if(Math.abs(ns-s)<1e-4)return;
+    imgs.forEach(function(im){im.style.transform=t;}); panels.forEach(function(p){p.classList.toggle("pan",s>1.001);}); if(hook)hook(s,tx,ty);}
+  function zoomAt(fx,fy,z){var ns=Math.max(1,Math.min(11,s*z)); if(Math.abs(ns-s)<1e-4)return;
     var ux=(fx-tx)/s, uy=(fy-ty)/s; s=ns; tx=fx-ux*s; ty=fy-uy*s; apply();}
   var drag=null;
   surfaces.forEach(function(surf){
     surf.addEventListener("pointerdown",function(e){activeViewer=self; if(s<=1)return; e.preventDefault();
       drag={x:e.clientX,y:e.clientY,w:surf.clientWidth,h:surf.clientHeight};});
     surf.addEventListener("wheel",function(e){
-      if(e.deltaY>0 && s<=1.0001) return;        // at min zoom, let the page scroll normally
+      if(s<=1.0001) return;                       // at min zoom the wheel scrolls the page (both directions)
       e.preventDefault(); activeViewer=self; var r=surf.getBoundingClientRect();
-      zoomAt((e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height, e.deltaY<0?1.1:1/1.1);},{passive:false});
+      zoomAt((e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height, e.deltaY<0?1.08:1/1.08);},{passive:false});
+    surf.addEventListener("dblclick",function(e){activeViewer=self; var r=surf.getBoundingClientRect();
+      zoomAt((e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height, 1.8);});
     surf.addEventListener("mouseenter",function(){activeViewer=self;});
   });
   document.addEventListener("pointermove",function(e){if(!drag)return; tx+=(e.clientX-drag.x)/drag.w; ty+=(e.clientY-drag.y)/drag.h; drag.x=e.clientX; drag.y=e.clientY; apply();});
   document.addEventListener("pointerup",function(){drag=null;});
-  self={zin:function(){zoomAt(0.5,0.5,1.25);},zout:function(){zoomAt(0.5,0.5,1/1.25);},
-    reset:function(){s=1;tx=0;ty=0;apply();}, panBy:function(dx,dy){if(s<=1)return; tx+=dx;ty+=dy;apply();}, apply:apply};
+  self={zin:function(){zoomAt(0.5,0.5,1.2);},zout:function(){zoomAt(0.5,0.5,1/1.2);},
+    reset:function(){s=1;tx=0;ty=0;apply();}, panBy:function(dx,dy){if(s<=1)return; tx+=dx;ty+=dy;apply();}, apply:apply,
+    setHook:function(f){hook=f;}};
   return self;
 }
 function $(id){return document.getElementById(id);}
@@ -444,6 +464,67 @@ var OV=Viewer([$("ov_img")],qa("[data-surf=ov]"),qa("[data-surf=ov]"));
 var SV=Viewer(["p_rgb","p_cl","p_th","p_nd"].map($),qa("[data-surf=sy]"),qa("[data-surf=sy]"));
 var DV=Viewer(["d_cl","d_nd","d_th"].map($),qa("[data-surf=dg]"),qa("[data-surf=dg]"));
 var VIEW={ov:OV,sy:SV,dg:DV}, WRAP={ov:$("fs_ov"),sy:$("fs_sync"),dg:$("fs_diag")}; activeViewer=SV;
+/* ---- point markers + popups (3+1) ---- */
+var CLSN={1:{el:"Δέντρο",en:"Tree"},2:{el:"Κτίριο",en:"Building"},3:{el:"Δρόμος",en:"Road"},4:{el:"Όχημα",en:"Vehicle"},5:{el:"Γρασίδι",en:"Grass"},6:{el:"Γυμνό έδαφος",en:"Bare Soil"},7:{el:"Σκίαση/θόρυβος",en:"Shadow-Noise"}};
+var POINTS=/*PTS*/[{"t": "vehicle", "fx": 0.01017, "fy": 0.3047, "ms": {"Blue": 0.1426, "Green": 0.1482, "Red": 0.1676, "RE": 0.1734, "NIR": 0.1858}, "ndsm": 1.12, "thermal": 51.74, "pred": 4, "status": "Rejected possible vehicle", "reason": "LW_below_min", "area": 1.55}, {"t": "vehicle", "fx": 0.04112, "fy": 0.61002, "ms": {"Blue": 0.6133, "Green": 0.6816, "Red": 0.6739, "RE": 0.6573, "NIR": 0.6396}, "ndsm": 1.23, "thermal": 50.67, "pred": 4, "status": "Vehicle", "reason": " ", "area": 6.817}, {"t": "vehicle", "fx": 0.05556, "fy": 0.72579, "ms": {"Blue": 0.0716, "Green": 0.068, "Red": 0.0761, "RE": 0.0857, "NIR": 0.0858}, "ndsm": 0.99, "thermal": 48.99, "pred": 4, "status": "Vehicle", "reason": " ", "area": 6.221}, {"t": "vehicle", "fx": 0.08147, "fy": 0.73192, "ms": {"Blue": 0.4373, "Green": 0.563, "Red": 0.5939, "RE": 0.5717, "NIR": 0.5385}, "ndsm": 1.78, "thermal": 48.58, "pred": 4, "status": "Vehicle", "reason": " ", "area": 7.541}, {"t": "vehicle", "fx": 0.11356, "fy": 0.10296, "ms": {"Blue": 0.444, "Green": 0.491, "Red": 0.5403, "RE": 0.5263, "NIR": 0.5251}, "ndsm": 1.1, "thermal": 49.51, "pred": 4, "status": "Vehicle", "reason": " ", "area": 3.223}, {"t": "vehicle", "fx": 0.12864, "fy": 0.48588, "ms": {"Blue": 0.0481, "Green": 0.0569, "Red": 0.0683, "RE": 0.0769, "NIR": 0.0889}, "ndsm": 1.06, "thermal": 46.98, "pred": 4, "status": "Rejected possible vehicle", "reason": "LW_below_min", "area": 2.885}, {"t": "tree", "fx": 0.01064, "fy": 0.76251, "ms": {"Blue": 0.1345, "Green": 0.1895, "Red": 0.2583, "RE": 0.3167, "NIR": 0.4139}, "ndsm": 0.0, "thermal": 49.53, "pred": 6, "status": "Rejected possible tree", "reason": "nDSM_below_min", "area": 17.368}, {"t": "tree", "fx": 0.04268, "fy": 0.67445, "ms": {"Blue": 0.1531, "Green": 0.2036, "Red": 0.241, "RE": 0.3303, "NIR": 0.4388}, "ndsm": 0.0, "thermal": 49.27, "pred": 1, "status": "Tree", "reason": " ", "area": 17.269}, {"t": "tree", "fx": 0.07817, "fy": 0.24888, "ms": {"Blue": 0.0618, "Green": 0.0696, "Red": 0.0763, "RE": 0.0916, "NIR": 0.1408}, "ndsm": 4.73, "thermal": 54.42, "pred": 1, "status": "Rejected possible tree", "reason": "Area_below_min", "area": 0.709}, {"t": "tree", "fx": 0.11474, "fy": 0.69479, "ms": {"Blue": 0.0726, "Green": 0.1052, "Red": 0.0946, "RE": 0.2066, "NIR": 0.3956}, "ndsm": 2.71, "thermal": 49.72, "pred": 1, "status": "Tree", "reason": " ", "area": 6.917}, {"t": "tree", "fx": 0.14148, "fy": 0.33156, "ms": {"Blue": 0.0761, "Green": 0.1142, "Red": 0.1437, "RE": 0.1972, "NIR": 0.2984}, "ndsm": 1.67, "thermal": 47.54, "pred": 1, "status": "Tree", "reason": " ", "area": 2.923}, {"t": "tree", "fx": 0.1684, "fy": 0.40377, "ms": {"Blue": 0.0526, "Green": 0.0722, "Red": 0.0839, "RE": 0.1027, "NIR": 0.1631}, "ndsm": 2.23, "thermal": 47.31, "pred": 1, "status": "Tree", "reason": " ", "area": 8.286}, {"t": "tree", "fx": 0.19768, "fy": 0.04912, "ms": {"Blue": 0.0529, "Green": 0.0936, "Red": 0.077, "RE": 0.2268, "NIR": 0.533}, "ndsm": 2.56, "thermal": 46.09, "pred": 1, "status": "Tree", "reason": " ", "area": 7.634}, {"t": "road", "fx": 0.01055, "fy": 0.26775, "ms": {"Blue": 0.2581, "Green": 0.3091, "Red": 0.3676, "RE": 0.3733, "NIR": 0.4283}, "ndsm": 1.75, "thermal": 52.75, "pred": 3, "status": "Rejected possible road", "reason": "Area_below_min", "area": 0.937}, {"t": "road", "fx": 0.01866, "fy": 0.64676, "ms": {"Blue": 0.1287, "Green": 0.1758, "Red": 0.2367, "RE": 0.3133, "NIR": 0.416}, "ndsm": 0.0, "thermal": 50.09, "pred": 3, "status": "Rejected possible road", "reason": "Area_below_min", "area": 0.028}, {"t": "road", "fx": 0.03223, "fy": 0.2332, "ms": {"Blue": 0.1557, "Green": 0.2066, "Red": 0.253, "RE": 0.2699, "NIR": 0.3124}, "ndsm": 0.01, "thermal": 52.26, "pred": 3, "status": "Rejected possible road", "reason": "Area_below_min", "area": 0.078}, {"t": "road", "fx": 0.03622, "fy": 0.29726, "ms": {"Blue": 0.2724, "Green": 0.3779, "Red": 0.4533, "RE": 0.4624, "NIR": 0.5158}, "ndsm": 1.23, "thermal": 53.25, "pred": 3, "status": "Rejected possible road", "reason": "Area_below_min", "area": 0.024}, {"t": "road", "fx": 0.04165, "fy": 0.03642, "ms": {"Blue": 0.3169, "Green": 0.3891, "Red": 0.4102, "RE": 0.4119, "NIR": 0.432}, "ndsm": 0.0, "thermal": 49.81, "pred": 3, "status": "Road", "reason": " ", "area": 9.334}, {"t": "road", "fx": 0.05964, "fy": 0.11961, "ms": {"Blue": 0.0557, "Green": 0.075, "Red": 0.0764, "RE": 0.0826, "NIR": 0.0974}, "ndsm": 0.17, "thermal": 49.89, "pred": 3, "status": "Rejected possible road", "reason": "Area_below_min", "area": 0.03}, {"t": "road", "fx": 0.06956, "fy": 0.78151, "ms": {"Blue": 0.2114, "Green": 0.2594, "Red": 0.3166, "RE": 0.3269, "NIR": 0.3647}, "ndsm": 0.0, "thermal": 49.78, "pred": 3, "status": "Rejected possible road", "reason": "Area_below_min", "area": 0.138}];
+function fmt(n,d){var f=Math.pow(10,d); return (Math.round(n*f)/f).toFixed(d);}
+function colCls(t){return t==="vehicle"?"v":(t==="tree"?"t":"r");}
+var MK={}; var POP={open:null};
+qa("[data-mk]").forEach(function(ov){
+  var type=ov.getAttribute("data-mk"); var arr=[];
+  POINTS.forEach(function(pt){
+    var m=document.createElement("span"); m.className="marker "+colCls(pt.t);
+    var tag=document.createElement("span"); tag.className="mtag"; m.appendChild(tag);
+    m.addEventListener("click",function(e){e.stopPropagation(); openPopup(ov,type,pt,m);});
+    ov.appendChild(m); arr.push({el:m,tag:tag,p:pt});
+  });
+  MK[type]={ov:ov,markers:arr};
+});
+function tagText(type,p){
+  if(type==="th")return fmt(p.thermal,1)+"°C";
+  if(type==="nd")return fmt(p.ndsm,2)+" m";
+  if(type==="cl"){var c=CLSN[p.pred]; return c?c[LANG]:("#"+p.pred);}
+  return "";
+}
+function updateMarkers(s,tx,ty){
+  Object.keys(MK).forEach(function(type){
+    MK[type].markers.forEach(function(o){
+      var L=(tx+o.p.fx*s)*100, Tp=(ty+o.p.fy*s)*100;
+      var inv=L>=-1&&L<=101&&Tp>=-1&&Tp<=101, show=s>=2.2&&inv;
+      o.el.classList.toggle("show",show);
+      if(show){o.el.style.left=L+"%"; o.el.style.top=Tp+"%";
+        var t=(s>=4.5)?tagText(type,o.p):""; o.tag.textContent=t; o.tag.style.display=t?"block":"none";}
+    });
+  });
+  if(POP.open) positionPopup();
+}
+SV.setHook(updateMarkers);
+function row(k,v){return '<div class="kv"><span>'+k+'</span><b>'+v+'</b></div>';}
+function popHTML(type,p){
+  var L=LANG;
+  if(type==="rgb"){return '<h4>'+(L==="el"?"Φασματική ανακλαστικότητα":"Spectral reflectance")+'</h4>'+
+    row("Blue",fmt(p.ms.Blue,3))+row("Green",fmt(p.ms.Green,3))+row("Red",fmt(p.ms.Red,3))+row("RedEdge",fmt(p.ms.RE,3))+row("NIR",fmt(p.ms.NIR,3))+'<div class="src">MicaSense Altum-PT</div>';}
+  if(type==="th"){return '<h4>'+(L==="el"?"Θερμοκρασία":"Temperature")+'</h4>'+row(L==="el"?"Τιμή":"Value",fmt(p.thermal,1)+" °C");}
+  if(type==="nd"){return '<h4>'+(L==="el"?"Ύψος (nDSM)":"Height (nDSM)")+'</h4>'+row(L==="el"?"Τιμή":"Value",fmt(p.ndsm,2)+" m");}
+  var c=CLSN[p.pred], pn=c?c[L]:("#"+p.pred), out='<h4>'+(L==="el"?"Ταξινόμηση":"Classification")+'</h4>'+row(L==="el"?"Πρόβλεψη":"Prediction",pn);
+  if(p.status) out+=row(L==="el"?"Κατάσταση":"Status",p.status);
+  if(p.reason && p.reason.trim()) out+=row(L==="el"?"Λόγος":"Reason",p.reason);
+  if(p.area) out+=row(L==="el"?"Εμβαδόν":"Area",fmt(p.area,2)+" m\u00b2");
+  return out;
+}
+function openPopup(ov,type,p,marker){
+  closePopup();
+  var el=document.createElement("div"); el.className="popup";
+  el.innerHTML='<span class="x">\u2715</span>'+popHTML(type,p);
+  el.querySelector(".x").addEventListener("click",function(e){e.stopPropagation();closePopup();});
+  ov.appendChild(el); POP={open:true,el:el,marker:marker};
+  positionPopup();
+}
+function positionPopup(){ if(!POP.open)return; var m=POP.marker;
+  if(!m.classList.contains("show")){closePopup();return;}
+  POP.el.style.left=m.style.left; POP.el.style.top=m.style.top; }
+function closePopup(){ if(POP.open&&POP.el&&POP.el.parentNode)POP.el.parentNode.removeChild(POP.el); POP={open:null}; }
+qa("[data-surf=sy]").forEach(function(sf){sf.addEventListener("pointerdown",function(){if(POP.open)closePopup();});});
 function fsToggle(w,v){ if(document.fullscreenElement){document.exitFullscreen();return;} if(w.requestFullscreen){w.requestFullscreen().then(function(){activeViewer=v;}).catch(function(){});}}
 qa(".tbtn").forEach(function(b){b.addEventListener("click",function(){
   var a=b.dataset.act, v=VIEW[b.dataset.v];
