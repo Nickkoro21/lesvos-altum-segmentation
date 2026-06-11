@@ -95,7 +95,7 @@
   .dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
   .dcl{background:var(--cCl)}.dnd{background:var(--cNd)}.dth{background:var(--cTh)}
   .mk{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
-  .marker{position:absolute;width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-radius:50%;border:2px solid #fff;
+  .marker{position:absolute;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;border:2px solid #fff;
           box-shadow:0 0 0 2px rgba(0,0,0,.55);cursor:pointer;pointer-events:auto;display:none}
   .marker.show{display:block}
   .marker.v{background:#FFD400}.marker.t{background:#1B5E20}.marker.r{background:#111}.marker.b{background:#EE2E22}
@@ -111,7 +111,7 @@
   .legend{display:none;position:absolute;top:50%;transform:translateY(-50%);z-index:7;background:rgba(15,20,26,.86);
           color:#fff;border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.55;pointer-events:none;max-height:92%;overflow:auto}
   .leg-left{left:8px}.leg-right{right:8px}
-  .fswrap:fullscreen.legshow .legend{display:block}
+  .fswrap.legshow .legend{display:block}
   .lgt{font-weight:700;margin-bottom:5px;opacity:.92}
   .lgr{display:flex;align-items:center;gap:6px;white-space:nowrap}
   .lgr i{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid rgba(255,255,255,.45)}
@@ -176,6 +176,7 @@
         <button class="tbtn" data-act="in" data-v="ov">+</button>
         <button class="tbtn" data-act="out" data-v="ov">−</button>
         <button class="tbtn wide" data-act="reset" data-v="ov" data-i="b_reset"></button>
+        <button class="tbtn" data-act="left" data-v="ov">◀</button><button class="tbtn" data-act="up" data-v="ov">▲</button><button class="tbtn" data-act="down" data-v="ov">▼</button><button class="tbtn" data-act="right" data-v="ov">▶</button>
         <button class="tbtn wide fsbtn" data-act="fs" data-v="ov" data-i="b_fs"></button>
         <button class="tbtn wide exitbtn" data-act="exit" data-i="b_exit"></button>
         <a class="tbtn wide" href="downloads/hero_map.png" download>⬇ PNG</a>
@@ -222,6 +223,7 @@
         <button class="tbtn" data-act="in" data-v="sy">+</button>
         <button class="tbtn" data-act="out" data-v="sy">−</button>
         <button class="tbtn wide" data-act="reset" data-v="sy" data-i="b_reset"></button>
+        <button class="tbtn" data-act="left" data-v="sy">◀</button><button class="tbtn" data-act="up" data-v="sy">▲</button><button class="tbtn" data-act="down" data-v="sy">▼</button><button class="tbtn" data-act="right" data-v="sy">▶</button>
         <button class="tbtn wide fsbtn" data-act="fs" data-v="sy" data-i="b_fs"></button>
         <button class="tbtn wide exitbtn" data-act="exit" data-i="b_exit"></button>
         <button class="tbtn wide" id="leg_btn" data-i="b_legend"></button>
@@ -230,9 +232,9 @@
       <div class="syncwrap">
         <div class="syncgrid">
           <div class="panel" data-surf="sy"><span class="pl rgb" data-i="pl_rgb"></span><img id="p_rgb" src="assets_html/_h_rgb.jpg" alt="RGB" onerror="this.style.display='none'"><div class="mk" data-mk="rgb"></div></div>
-          <div class="panel" data-surf="sy"><span class="pl cl" data-i="pl_cl"></span><img id="p_cl" src="assets_html/layer_classified.png" alt="Classified"><div class="mk" data-mk="cl"></div></div>
-          <div class="panel" data-surf="sy"><span class="pl th" data-i="pl_th"></span><img id="p_th" src="assets_html/layer_thermal.png" alt="Thermal"><div class="mk" data-mk="th"></div></div>
-          <div class="panel" data-surf="sy"><span class="pl nd" data-i="pl_nd"></span><img id="p_nd" src="assets_html/layer_ndsm.png" alt="nDSM"><div class="mk" data-mk="nd"></div></div>
+          <div class="panel" data-surf="sy"><span class="pl cl" data-i="pl_cl"></span><img id="p_cl" src="assets_html/layer_classified.jpg" alt="Classified"><div class="mk" data-mk="cl"></div></div>
+          <div class="panel" data-surf="sy"><span class="pl th" data-i="pl_th"></span><img id="p_th" src="assets_html/layer_thermal.jpg" alt="Thermal"><div class="mk" data-mk="th"></div></div>
+          <div class="panel" data-surf="sy"><span class="pl nd" data-i="pl_nd"></span><img id="p_nd" src="assets_html/layer_ndsm.jpg" alt="nDSM"><div class="mk" data-mk="nd"></div></div>
         </div>
       </div>
     </div>
@@ -246,14 +248,15 @@
         <button class="tbtn" data-act="in" data-v="dg">+</button>
         <button class="tbtn" data-act="out" data-v="dg">−</button>
         <button class="tbtn wide" data-act="reset" data-v="dg" data-i="b_zreset"></button>
+        <button class="tbtn" data-act="left" data-v="dg">◀</button><button class="tbtn" data-act="up" data-v="dg">▲</button><button class="tbtn" data-act="down" data-v="dg">▼</button><button class="tbtn" data-act="right" data-v="dg">▶</button>
         <button class="tbtn wide" id="d_reset" data-i="b_zones"></button>
         <button class="tbtn wide fsbtn" data-act="fs" data-v="dg" data-i="b_fs"></button>
         <button class="tbtn wide exitbtn" data-act="exit" data-i="b_exit"></button>
       </div>
       <div class="stage" data-surf="dg" id="d_stage">
-        <img id="d_cl" src="assets_html/layer_classified.png" alt="Classification">
-        <img id="d_nd" src="assets_html/layer_ndsm.png" alt="nDSM">
-        <img id="d_th" src="assets_html/layer_thermal.png" alt="Thermal">
+        <img id="d_cl" src="assets_html/layer_classified.jpg" alt="Classification">
+        <img id="d_nd" src="assets_html/layer_ndsm.jpg" alt="nDSM">
+        <img id="d_th" src="assets_html/layer_thermal.jpg" alt="Thermal">
       </div>
       <div class="controls">
         <div class="ctl"><label><span data-i="sl_nd"></span> <span id="dv_nd">20%</span></label>
@@ -445,7 +448,7 @@ var _saved="el"; try{_saved=localStorage.getItem("lcm_lang")||"el";}catch(_){}
 setLang(_saved);
 
 /* ---- viewers (shared transform) ---- */
-var activeViewer=null; var MAXS=10, DOT_S=4, TAG_S=6.5;
+var activeViewer=null; var MAXS=14, DOT_S=10, TAG_S=12.5;
 function Viewer(imgs, surfaces, panels){
   var s=1,tx=0,ty=0,self,hook=null;
   function clamp(){var lo=Math.min(0,1-s); if(tx>0)tx=0; if(ty>0)ty=0; if(tx<lo)tx=lo; if(ty<lo)ty=lo;}
@@ -463,7 +466,7 @@ function Viewer(imgs, surfaces, panels){
     },{passive:false});
     surf.addEventListener("dblclick",function(e){activeViewer=self; var r=surf.getBoundingClientRect();
       zoomAt((e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height, 1.6);});
-    surf.addEventListener("pointerdown",function(e){ activeViewer=self;
+    surf.addEventListener("pointerdown",function(e){ activeViewer=self; if(e.pointerType!=="touch")e.preventDefault();
       ptrs[e.pointerId]={x:e.clientX,y:e.clientY,surf:surf,pt:e.pointerType};
       var ids=Object.keys(ptrs); if(ids.length===2) pinch=dist(ptrs[ids[0]],ptrs[ids[1]]); });
   });
@@ -581,6 +584,7 @@ function fsToggle(w,v){ if(document.fullscreenElement){document.exitFullscreen()
 qa(".tbtn").forEach(function(b){b.addEventListener("click",function(){
   var a=b.dataset.act, v=VIEW[b.dataset.v];
   if(a==="in")v.zin(); else if(a==="out")v.zout(); else if(a==="reset")v.reset();
+  else if(a==="left")v.panBy(0.15,0); else if(a==="right")v.panBy(-0.15,0); else if(a==="up")v.panBy(0,0.15); else if(a==="down")v.panBy(0,-0.15);
   else if(a==="fs")fsToggle(WRAP[b.dataset.v],v); else if(a==="exit"){if(document.fullscreenElement)document.exitFullscreen();}
 });});
 document.addEventListener("fullscreenchange",function(){setTimeout(function(){OV.apply();SV.apply();DV.apply();},60);});
