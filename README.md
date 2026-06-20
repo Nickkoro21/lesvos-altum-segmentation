@@ -25,13 +25,13 @@ land-cover composite was produced over **Pamfila, Lesvos (Greece)**, together wi
 rendering pipeline** that generates the final poster. The work is part of an MSc thesis at the
 **University of the Aegean** (Department of Geography, RSGIS Lab), supervised by **Dr. Christos Vasilakos**.
 
-Source imagery comes from a **MicaSense Altum-PT** sensor. A **DeepLabV3+ PointRend (ResNet-101)**
+Source imagery comes from a **MicaSense Altum-PT** sensor. A **DeepLabV3 + PointRend (ResNet-101)**
 model classifies the scene into **7 land-cover classes** — Tree, Building, Road, Vehicle, Grass,
 Bare Soil, Shadow-Noise — and the map integrates that classification with **nDSM** (height) and a
 **thermal** channel.
 
 > **Language note:** the web page is written in **Greek**, with standard English terminology kept
-> (DeepLabV3+, PointRend, ResNet-101, nDSM, hillshade).
+> (DeepLabV3, PointRend, ResNet-101, nDSM, hillshade).
 
 ## 🌐 Live page
 
@@ -62,7 +62,7 @@ Every image supports full-screen, zoom in/out, keyboard-arrow panning, reset and
 ## 🛰️ Data & method
 
 - **Sensor:** MicaSense Altum-PT (multispectral + thermal + panchromatic).
-- **Model:** DeepLabV3+ PointRend, ResNet-101 backbone, 7-Band input, 7 land-cover classes.
+- **Model:** DeepLabV3 + PointRend, ResNet-101 backbone, 7-Band input, 7 land-cover classes.
 - **Reference system:** EPSG:32635 (UTM 35N) · GSD 4.52 cm · area ≈ 500 × 350 m.
 
 ## Repository structure
