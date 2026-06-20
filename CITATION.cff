@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Land-Cover Composite Map of Pamfila, Lesvos: Cartographic Synthesis of UAV Multispectral, nDSM and Thermal Data"
+abstract: "Interactive cartographic land-cover composite (elevation / 7-class classification / thermal) over Pamfila, Lesvos, with a Python rendering pipeline. MSc thesis deliverable, University of the Aegean (Department of Geography, RSGIS Lab), Mytilene, Greece, 2026; supervised by Dr. Christos Vasilakos."
+type: software
+authors:
+  - family-names: Koroniadis
+    given-names: Nikolaos
+    affiliation: "University of the Aegean, Department of Geography, RSGIS Lab"
+version: "1.0.0"
+date-released: "2026-06-20"
+license: MIT
+repository-code: "https://github.com/Nickkoro21/lesvos-altum-segmentation"
+url: "https://nickkoro21.github.io/lesvos-altum-segmentation/"
+keywords:
+  - remote sensing
+  - UAV
+  - MicaSense Altum-PT
+  - land cover
+  - cartography
+  - hillshade
+  - nDSM
+  - thermal
+  - DeepLabV3
+  - PointRend
